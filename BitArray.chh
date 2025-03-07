@@ -1,0 +1,52 @@
+#include <math.h>
+#include <vector>
+
+
+class Bit {
+    private:
+        int index;
+        unsigned int* value;
+    public:
+        Bit(unsigned int* value, int index): value(value) {
+            int cell_bits = sizeof(unsigned int) * 8;
+            // Приведение отрицательного индекса к диапазону [0, cell_bits-1]
+            index = ((index % cell_bits) + cell_bits) % cell_bits;
+            this->index = index;
+        }
+
+        Bit& write(bool other) {
+            bool current = ((*value >> index) & 1u) == 1u;
+            if (current != other) {
+                *value ^= (1u << index);
+            }
+            return *this;
+        }
+
+        bool read() {
+            return ((*value >> index) & 1u) == 1u;
+        }
+
+        int getIndex() {return index; }
+
+        unsigned int* getAddress() {return value; }
+};
+
+class BitArray {
+    private:
+        std::vector<unsigned int> arr;
+        unsigned short size_cell; // Размер ячейки в bit
+    public:
+
+        BitArray(const int l, const unsigned int pattern) {
+            size_cell = sizeof(unsigned int)*8;
+            arr = std::vector<unsigned int>((l + size_cell - 1) / size_cell, pattern);
+        }
+
+        Bit operator[] (const int index) {
+            int total_bits = arr.size() * size_cell;
+            int normalized_index = ((index % total_bits) + total_bits) % total_bits;
+            int cell_index = normalized_index / size_cell;
+            int bit_index = normalized_index % size_cell;
+            return Bit(&arr[cell_index], bit_index);
+        }
+};
